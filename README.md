@@ -1,276 +1,156 @@
 <div align="center">
   <img alt="Earthworm" width="120" height="120" src="./assets/logo/logo-1000.png">
-  <h1>Earthworm</h1>
-  <span>English | <a href="./README.zh-CN.md">中文</a></span>
+  <h1>Earthworm · 本地版</h1>
+  <p>用「连词构句」学英语 ——<br/>改造成所有数据都留在自己电脑上的单机版</p>
+  <img src="./docs/screenshots/home.png" width="860" alt="首页" />
 </div>
 
-<div align="center">
-  <br/>
-  <a href="https://hellogithub.com/repository/9433615761f548cf9648434c670cd85b" target="_blank"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=9433615761f548cf9648434c670cd85b&claim_uid=249cPWvjfNmU7dp" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-</div>
+## 这是什么
 
-## ⚡ Introduction
+[Earthworm](https://github.com/cuixueshe/earthworm)（蚯蚓英语）的重度改造版。
+上游是标准 SaaS 形态：Logto 登录、Docker 起库、课程写死在代码里。
+这个版本把它拆成了一个**双击就能用、不需要联网、不需要账号**的本地学习工具：
 
-By constructing sentences with conjunctions, it helps you learn English better~ 😊
+- 免登录，只有一个本地学习者身份
+- 用免安装的 PostgreSQL + Redis，不用 Docker、不需要管理员权限
+- 课程包可以自己导入 CSV、可以新建、可以分多批往同一个包里追加
+- 发音换成微软神经网络语音（与 Azure TTS 同一套声学模型），全库预生成为本地 mp3
+- 界面重做：深/浅色主题、课程进度条、收藏本、站内帮助文档
 
-## 🚀 How To Start?
+> 上游原始说明（Docker + Logto 的开发方式）仍然适用，见 [上游仓库](https://github.com/cuixueshe/earthworm)。
+> 想了解本地部署细节请看 [部署说明.md](./部署说明.md)。
 
-**The mentioned operations below are based on the root directory of the current project, please be attentive to ensure there are no errors!**
+## 截图
 
-### Requirements
+| 课程列表（带学习进度）                          | 学习页                                 |
+| ----------------------------------------------- | -------------------------------------- |
+| ![课程列表](./docs/screenshots/course-list.png) | ![学习页](./docs/screenshots/game.png) |
 
-- **pnpm version >= 8**
+| 设置项                                   | 站内帮助                             |
+| ---------------------------------------- | ------------------------------------ |
+| ![设置](./docs/screenshots/settings.png) | ![帮助](./docs/screenshots/help.png) |
 
-  ```bash
-  corepack enable
-  ```
+## 相对上游做了什么
 
-- **Node.js version >= v20**
-  > Use the version from .node-version. [Supported tools](https://github.com/shadowspawn/node-version-usage#compatibility-testing)
-- **Postgres version >= 14.0.0**
-- **Redis version >= 5.0.0**
-- **Docker**. please make sure it is installed and running successfully on your local machine.
+| 方面     | 改动                                                                                     |
+| -------- | ---------------------------------------------------------------------------------------- |
+| 认证     | 去掉 Logto，改为 `LOCAL_MODE=true` + 固定 token 的本地身份                               |
+| 运行环境 | PostgreSQL 16 / Redis 5 免安装版随仓库外置，`start-earthworm.bat` 一键拉起 4 个服务      |
+| 发音     | 有道 `dictvoice`（单词录音拼接）→ 微软 Edge 神经语音，磁盘缓存 + 全库预生成，命中约 76ms |
+| 课程     | CSV 导入器 + 课程包新建 + 分批导入（可指定并入已有包、可勾选单节课）                     |
+| 进度     | `user_course_progress` 唯一键细到「一节课一条」，课程列表显示进度条与百分比              |
+| 界面     | 首页/课程列表/学习页/设置页重做，支持深色模式、手机端；新增收藏本、站内帮助              |
+| 数据     | 内置 55 课 / 8865 句的《新概念》语料，导入后按句去重建库                                 |
 
-```bash
-docker --version # Docker version 24.0.7, build afdd53b
+## 快速开始（Windows）
 
-node --version # v20+
-
-pnpm -v # 8+
-```
-
-### Editor
-
-#### VSCode
-
-- Install the recommended extensions [extensions.json](./.vscode/extensions.json)
-
-### 1. Install Dependencies
+前提：**Node.js ≥ 20**、**pnpm ≥ 8**。
 
 ```bash
 pnpm install
+cp apps/api/.env.example apps/api/.env       # Windows 用 copy
+cp apps/client/.env.example apps/client/.env
+
+pnpm schema:build                             # 生成 drizzle schema
+pnpm -F api build                             # 后端产物 apps/api/dist
+pnpm -F client build                          # 前端产物 apps/client/.output
 ```
 
-### 2. Configure the `.env` File
-
-You can choose to copy the contents of `./apps/api/.env.example` to`./apps/api/.env`. note that the' example' file contains sample configuration. the main storage system's environment variable information, such as database connection address, user name, password, port, key, etc. the back-end service will read the configuration from this file, **of course you can also change it to your own configuration information**.
-
-Windows users recommend shortcut keys to copy and paste, Linux users can operate through the following command.
-
-#### Server
-
-```bash
-cp ./apps/api/.env.example ./apps/api/.env
-```
-
-#### Client
-
-```bash
-cp ./apps/client/.env.example ./apps/client/.env
-```
-
-### 3. Restore Data Of Logto
-
-Uncompress `logto_db_init_data.zip` to `.volumes/`
-
-```bash
-unzip logto_db_init_data.zip -d .volumes/
-```
-
-- Admin URL: http://localhost:3011
-- Username: admin
-- Password: WkN7g5-i8ZrJckX
-
-> if you want to [Manual Configuration Logto](https://github.com/cuixueshe/earthworm/wiki/%E8%BF%81%E7%A7%BB-Logto-%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F%E5%90%8E%E6%9C%AC%E5%9C%B0%E5%90%AF%E5%8A%A8%E9%85%8D%E7%BD%AE%E6%96%B9%E6%A1%88%EF%BC%88%E8%B4%A1%E7%8C%AE%E8%80%85%EF%BC%89)
-
-### 4. Start Docker Compose Service
-
-The backend relies on Postgres and Redis services. Start and stop these services using the commands configured in `package.json` below.
-
-```bash
-# start
-pnpm docker:start
-
-# When needed, execute the following command
-# stop
-pnpm docker:stop
-# delete
-pnpm docker:delete
-# Complete deletion (including Volume data)
-pnpm docker:down
-```
-
-If you prefer manual, you can use the commands below.
-
-```bash
-docker compose up -d
-docker compose stop
-docker compose down
-
-# commands compatible with older versions of Docker
-docker-compose up -d
-```
-
-### 5. Initialize Database Schema
-
-When executing this command, try to keep a little time from the previous command, because the `-d` parameter just used will suspend its service execution in the background. At this time, the docker service may still be running. If an error is found, execute it again.
+首次建库（空库要初始化表结构 + 导入语料）：
 
 ```bash
 pnpm db:init
+pnpm db:upload          # 导入内置 55 课语料
 ```
 
-### 6. Create and Upload Course Data
+然后双击 **`start-earthworm.bat`**，等约 25 秒自动打开 http://localhost:3000 。
+停止用 `stop-earthworm.bat`。
 
-**Only Execute This During the Initial Database Initialization**.
+### 关于 `tools/pgsql`、`tools/redis`
+
+这两个目录是免安装的数据库程序本体（约 170MB），**没有放进仓库**（见 `.gitignore`）。
+一键脚本默认从下面两个位置启动它们：
+
+| 需要的程序             | 放哪里                                  | 下载                                                                      |
+| ---------------------- | --------------------------------------- | ------------------------------------------------------------------------- |
+| PostgreSQL 16 免安装版 | `tools/pgsql/`（含 `bin/postgres.exe`） | [EDB Binaries](https://www.enterprisedb.com/download-postgresql-binaries) |
+| Redis for Windows 5.x  | `tools/redis/`（含 `redis-server.exe`） | [tporadowski/redis](https://github.com/tporadowski/redis/releases)        |
+
+也可以不用一键脚本，直接用本机已装的 PostgreSQL / Redis，改 `apps/api/.env` 里的连接串即可，
+或者沿用上游的 `docker-compose.yml`：
 
 ```bash
-pnpm db:upload
+docker compose up -d      # 5433 / 6379
+pnpm dev:serve            # 后端 dev
+pnpm dev:client           # 前端 dev
 ```
 
-### 7. Start the Backend Service
+### 神经语音（可选）
+
+发音需要 Python 环境里的 `edge-tts`：
 
 ```bash
-pnpm dev:serve
+pip install edge-tts
 ```
 
-### 8. Start the Frontend Service
+`apps/api/.env` 里 `TTS_PYTHON` 不填则用 PATH 上的 `python`。
+服务启动 15 秒后会自动补齐缺失音频（`TTS_AUTO_PREWARM=true`），也可以手动触发：
 
 ```bash
-pnpm dev:client
+curl -X POST http://localhost:3001/tts/prewarm          # 全库补齐
+curl http://localhost:3001/tts/prewarm/status           # 看进度
+curl -X POST http://localhost:3001/tts/cache/purge      # 清缓存
 ```
 
-## 🛠️ About testing
+关掉语音（`TTS_ENABLED=false`）也不影响使用，会自动降级到浏览器 `speechSynthesis`。
 
-**Run the test before submitting the commit, and submit the code after the test passes, so as to avoid multiple commits to solve the test problem**.
+## 数据在哪 / 怎么备份
 
-### Front-end Testing
+| 内容                 | 位置                                   |
+| -------------------- | -------------------------------------- |
+| 学习记录、课程、进度 | `tools/pgdata/`（PostgreSQL 数据目录） |
+| 句子音频缓存         | `storage/tts/<hash前2位>/<hash>.mp3`   |
+| 上传的封面           | `apps/client/public/covers/`           |
 
-The main is the single test of Vitest and the automated test of cypress, execute the following command:
+换电脑时：先 `stop-earthworm.bat` 正常关闭数据库，再整包拷走，在 `tools/` 放回
+PostgreSQL / Redis，`pnpm install` 后重新构建即可。
 
-```bash
-# Enter the front-end project directory
-cd apps/client
+## 文档
 
-# vitest
-pnpm test:unit:run
-# cypress
-pnpm test:e2e:run
+| 文档                                     | 内容                                                                               |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| [使用说明.md](./使用说明.md)             | 面向使用者：首页、课程列表、怎么学一节课、发音、设置、收藏、加自己的课程、常见问题 |
+| [课程包导入说明.md](./课程包导入说明.md) | CSV 格式、命令行导入、分批导入、封面怎么设                                         |
+| [部署说明.md](./部署说明.md)             | 一键启动、端口、目录结构、数据库结构变动、维护命令                                 |
+| [界面改版说明.md](./界面改版说明.md)     | 历次界面改版的实现记录（设计取舍、踩过的坑）                                       |
 
-# monitor vitest, convenient hot update to see test results
-pnpm test:unit:watch
+站内也有同样的文档：打开 http://localhost:3000/help 。
+
+## 目录结构
+
+```
+earthworm/
+├── start-earthworm.bat / stop-earthworm.bat   一键启停
+├── apps/api/            NestJS 后端（3001）
+├── apps/client/         Nuxt 3 前端（3000）
+├── packages/schema/     drizzle 表结构
+├── packages/xingrong-courses/  语料与 CSV 导入器
+├── tools/
+│   ├── tts-worker/      edge-tts 常驻合成进程
+│   ├── build-help-docs.mjs      生成站内帮助文档
+│   ├── build-wordinfo.mjs       生成逐词释义表
+│   └── shot.mjs / test-answer-audio.mjs   截图与朗读回归脚本
+├── docs/screenshots/    README 用图
+└── storage/tts/         音频缓存（运行时生成，不入库）
 ```
 
-### Backend Testing
+## 版本
 
-Mainly Jest single test and end-to-end test, but need to access the test database, so you need to ensure that:
+当前版本 **v0.1**，见 [Releases](../../releases)。
+分支约定：`main` 为开发主线，`release/0.1` 为当前版本快照。
 
-1. testdb and testRedis services in Docker Compose started normally.
-2. The configuration information in the `.env.test` file is correct. If there is no such file, you can copy the contents of the `apps/api/.env.test.example` file to the `apps/api/.env.test` file. The following command is provided to directly use.
+## 许可与致谢
 
-Execute the following command:
-
-```bash
-# Enter Backend Project Directory
-cd apps/api
-
-# If you have an.env.test file, you don't need to run this step
-cp .env.test.example .env.test
-
-# Single test
-pnpm test:unit
-# End-to-end testing
-pnpm test:e2e
-# Single test and end-to-end test run together
-pnpm test
-```
-
-## Docs Project
-
-Project based on Vitepress documentation，execute the following command:
-
-```bash
-# Local Development
-pnpm docs:dev
-```
-
-## ❓ FAQ
-
-### Database connection failed
-
-My Docker and the database inside are running normally, but when I run the `db:init` command, I still report an error, indicating that the database connection failed.
-
-You can check whether the database configuration in the `.env` file is correct, or even whether this file has it! 😠
-
-### How To Correctly Update Course Data?
-
-when you identify incorrect course data and make modifications, you should use the following command to update the course data in the database.
-
-```bash
-pnpm db:update
-```
-
-### pnpm Install Error?
-
-Some dependencies require compilation during installation, necessitating the presence of relevant build environments.
-If these environments are not available, the compilation process may fail. Additionally, different modules may require different build environments, so specific issues need to be analyzed individually.
-Below are specific problems encountered along with their solutions.
-
-First try the following command to update `pnpm`.
-
-```shell
-pnpm i -g
-# or
-pnpm i -g pnpm
-# or
-npx pnpm i -g pnpm@latest
-```
-
-**Error Installing the argon2 Module On Windows**
-
-- Install Visual Studio 2015 or later, specifically the "Desktop development with C++" component. (In practice, any component containing C++ development tools and libraries will suffice.)
-- If you encounter Chinese characters display issues during compilation, execute `chcp 437` in the command prompt, then rerun the install command.
-
-### Docker Permission Denied in Docker?
-
-When using WSL2 as a development environment in Windows, the following error occurs when starting Docker with `docker compose up -d` :
-
-```bash
-permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix /var/run/docker.sock: connect: permission denied
-```
-
-> Solution
-
-Add the current user to the docker group
-
-```bash
-# Add docker user group
-sudo groupadd docker
-# Add the logged-in user to the docker user group
-sudo gpasswd -a $USER docker
-# Update user group
-newgrp docker
-# Test if docker command is working properly
-docker images
-```
-
-## 🤝 Frontend Development Guideline
-
-1. Do not Destructure Pinia store.
-
-   - The readability will be better when using `store`
-   - Destructuring can lead to reactivity loss and using `storeToRefs` is also quite cumbersome
-
-2. Avoid including UI logic in composables.
-
-   - Such as `toast.info()`
-   - We categorize the router as UI logic, and for ease of testing, avoid including routerrelated logic in there
-
-## 🚀 Star History
-
-[![Stargazers over time](https://starchart.cc/cuixueshe/earthworm.svg?variant=adaptive)](https://starchart.cc/cuixueshe/earthworm)
-
-## 🌟 Contributing
-
-Thanks to everyone who has already contributed to Earthworm! 🎉
-
-<a href="https://github.com//cuixueshe/earthworm/graphs/contributors"><img src="https://contributors.nn.ci/api?repo=cuixueshe/earthworm" /></a>
+本项目沿用上游的 **AGPL-3.0** 许可（见 [LICENSE](./LICENSE)）。
+原始项目：[cuixueshe/earthworm](https://github.com/cuixueshe/earthworm)，
+界面与课程语料的大部分功劳属于原作者与贡献者。

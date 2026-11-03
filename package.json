@@ -1,6 +1,6 @@
 {
   "name": "earthworm",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "packageManager": "pnpm@9.3.0+sha256.e1f9e8d1a16607a46dd3c158b5f7a7dc7945501d1c6222d454d63d033d1d918f",
   "main": "index.js",
@@ -12,6 +12,8 @@
     "db:init:test:ci": "pnpm schema:build && pnpm -F @earthworm/db run init:ci",
     "db:studio": "pnpm -F @earthworm/db db:studio",
     "db:upload": "pnpm -F @earthworm/xingrong-courses upload",
+    "db:import": "pnpm -F @earthworm/xingrong-courses import:csv",
+    "docs:help": "node tools/build-help-docs.mjs",
     "dev:serve": "pnpm schema:build && pnpm -F api start:dev",
     "dev:client": "pnpm -F client dev",
     "docker:start": "docker-compose up -d",

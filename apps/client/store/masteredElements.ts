@@ -34,6 +34,34 @@ export const useMasteredElementsStore = defineStore("masteredElements", () => {
     });
   }
 
+  // 批量删除：先本地摘掉（界面立刻响应），再逐条请求；失败的记录回滚回去
+  async function removeElements(elementIds: string[]) {
+    if (!elementIds.length) return { failed: [] as string[] };
+
+    const idSet = new Set(elementIds);
+    const removed = masteredElements.value.filter(({ id }) => idSet.has(id));
+    masteredElements.value = masteredElements.value.filter(({ id }) => !idSet.has(id));
+
+    const results = await Promise.allSettled(
+      elementIds.map((id) => fetchRemoveMasteredElements(id)),
+    );
+
+    const failed: string[] = [];
+    results.forEach((result, index) => {
+      if (result.status === "rejected") failed.push(elementIds[index]);
+    });
+
+    if (failed.length) {
+      const failedSet = new Set(failed);
+      masteredElements.value = [
+        ...removed.filter(({ id }) => failedSet.has(id)),
+        ...masteredElements.value,
+      ];
+    }
+
+    return { failed };
+  }
+
   function checkMastered(english: string) {
     return !!masteredElements.value.find((element) => {
       return element.content.english.toLowerCase() === english.toLowerCase();
@@ -50,6 +78,7 @@ export const useMasteredElementsStore = defineStore("masteredElements", () => {
     totalMasteredElementsCount,
     addElement,
     removeElement,
+    removeElements,
     checkMastered,
     setup,
   };

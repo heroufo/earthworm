@@ -89,13 +89,30 @@
             </td>
           </tr>
           <tr class="hover">
-            <td class="label-text">答题时自动播放声音</td>
+            <td class="label-text">
+              答题时先读英文
+              <span class="label-hint">中译英练习建议关闭，否则等于先报答案</span>
+            </td>
             <td class="text-right">
               <input
                 type="checkbox"
                 class="toggle toggle-secondary"
                 :checked="autoPlayEnglish"
                 @change="toggleAutoPlayEnglish"
+              />
+            </td>
+          </tr>
+          <tr class="hover">
+            <td class="label-text">
+              答对后朗读英文
+              <span class="label-hint">判对的那一刻读一遍，声音不会被翻页打断</span>
+            </td>
+            <td class="text-right">
+              <input
+                type="checkbox"
+                class="toggle toggle-secondary"
+                :checked="playAfterCorrect"
+                @change="togglePlayAfterCorrect"
               />
             </td>
           </tr>
@@ -186,6 +203,7 @@ import {
   useAutoPlayEnglish,
   useAutoPronunciation,
   useKeyboardSound,
+  usePlayAfterCorrect,
 } from "~/composables/user/sound";
 import { useSpaceSubmitAnswer } from "~/composables/user/submitKey";
 import { useShowWordsWidth } from "~/composables/user/words";
@@ -195,6 +213,7 @@ const { autoNextQuestion, toggleAutoQuestion } = useAutoNextQuestion();
 const { keyboardSound, toggleKeyboardSound } = useKeyboardSound();
 const { autoPlaySound, toggleAutoPlaySound } = useAutoPronunciation();
 const { autoPlayEnglish, toggleAutoPlayEnglish } = useAutoPlayEnglish();
+const { playAfterCorrect, togglePlayAfterCorrect } = usePlayAfterCorrect();
 const {
   pronunciation,
   // 发音配置列表
@@ -249,5 +268,10 @@ const shortcutKeyBindList = [
 
 section > h2 {
   @apply border-b pb-4;
+}
+
+/* 开关旁边的补充说明 */
+.label-hint {
+  @apply ml-2 text-xs text-gray-400 dark:text-gray-500;
 }
 </style>

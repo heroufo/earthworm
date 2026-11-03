@@ -67,16 +67,6 @@
         </div>
       </div>
     </div>
-
-    <!-- 右侧年份选项 -->
-    <!-- TODO: 多年份选择还没做，目前只有 2024，先写死了 -->
-    <div
-      v-for="year in yearOptions"
-      class="btn btn-sm tw-btn-blue ml-6 hidden pr-7 xl:flex"
-      :key="year.value"
-    >
-      {{ year.label }}
-    </div>
   </div>
 </template>
 
@@ -102,7 +92,7 @@ const emits = defineEmits<EmitsType>();
 const calendarTable = ref<HTMLTableElement>();
 const tableContainer = ref<HTMLDivElement | null>(null);
 
-const { initTable, renderBody, thead, tbody, weeksZh, yearOptions } = useCalendarGraph(emits, {
+const { initTable, renderBody, thead, tbody, weeksZh } = useCalendarGraph(emits, {
   getActivityLevel(item) {
     if (!item) return "";
 

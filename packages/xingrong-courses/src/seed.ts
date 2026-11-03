@@ -26,8 +26,8 @@ const courses = fs.readdirSync(path.resolve(__dirname, "../data/courses"));
       creatorId: "1",
       shareLevel: "public",
       isFree: true,
-      cover:
-        "https://earthworm-prod-1312884695.cos.ap-beijing.myqcloud.com/course-packs/xingrong.jpg",
+      // 原作者的 COS 图床已失效（返回 404），改用本地封面
+      cover: "/covers/xingrong.svg",
     })
     .returning();
 

@@ -1,12 +1,10 @@
 <template>
-  <div class="flex w-full flex-col pt-2">
-    <template v-if="isLoading">
-      <Loading></Loading>
-    </template>
-    <template v-else>
-      <MainTool />
-      <MainGame />
-    </template>
+  <div class="game-page">
+    <MainGameHeader v-if="!isLoading" />
+    <div class="game-stage">
+      <Loading v-if="isLoading"></Loading>
+      <MainGame v-else />
+    </div>
   </div>
 </template>
 
@@ -21,6 +19,10 @@ import { isAuthenticated } from "~/services/auth";
 import { useCourseStore } from "~/store/course";
 import { useCoursePackStore } from "~/store/coursePack";
 import { useMasteredElementsStore } from "~/store/masteredElements";
+
+definePageMeta({
+  layout: "game",
+});
 
 const isLoading = ref(true);
 const route = useRoute();
@@ -52,3 +54,21 @@ onMounted(async () => {
   isLoading.value = false;
 });
 </script>
+
+<style scoped>
+.game-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+}
+
+.game-stage {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 24px 0 40px;
+}
+</style>

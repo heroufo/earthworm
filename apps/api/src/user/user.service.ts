@@ -1,3 +1,6 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
+
 import { HttpException, Inject, Injectable } from "@nestjs/common";
 import { eq } from "drizzle-orm";
 
@@ -9,7 +12,48 @@ import { type MembershipDetails } from "../membership/types/membership.types";
 import { UserCourseProgressService } from "../user-course-progress/user-course-progress.service";
 import { UserEntity } from "../user/user.decorators";
 import { UpdateUserDto } from "./model/user.dto";
-import { type LogtoUserInfo } from "./types/user.types";
+
+/**
+ * 本地部署模式（Local Mode）
+ * ------------------------------------------------------------
+ * 原版把用户资料（用户名、头像）存在 Logto 里，通过 Logto M2M API 读写。
+ * 本地部署没有 Logto，这里改成一个本地 JSON 文件持久化，接口形状保持不变，
+ * 因此前端和其它模块无需改动。
+ */
+const LOCAL_MODE = process.env.LOCAL_MODE !== "false";
+const LOCAL_PROFILE_FILE = path.join(process.cwd(), ".local-profile.json");
+
+const DEFAULT_PROFILE = {
+  id: "local-user",
+  sub: "local-user",
+  username: "本地学习者",
+  name: "本地学习者",
+  picture: "",
+  avatar: "",
+  email: "local@earthworm.local",
+};
+
+type LocalProfile = typeof DEFAULT_PROFILE;
+
+function readProfile(): LocalProfile {
+  try {
+    if (fs.existsSync(LOCAL_PROFILE_FILE)) {
+      const raw = JSON.parse(fs.readFileSync(LOCAL_PROFILE_FILE, "utf-8"));
+      return { ...DEFAULT_PROFILE, ...raw };
+    }
+  } catch {
+    // 文件损坏时回退到默认值
+  }
+  return { ...DEFAULT_PROFILE };
+}
+
+function writeProfile(profile: LocalProfile) {
+  try {
+    fs.writeFileSync(LOCAL_PROFILE_FILE, JSON.stringify(profile, null, 2), "utf-8");
+  } catch (error) {
+    console.error("写入本地用户资料失败:", error);
+  }
+}
 
 @Injectable()
 export class UserService {
@@ -22,6 +66,12 @@ export class UserService {
 
   async findUser(uId: string) {
     try {
+      if (LOCAL_MODE) {
+        const profile = readProfile();
+        const membershipInfo = await this.getMembershipInfo(uId);
+        return { ...profile, id: uId, sub: uId, membership: membershipInfo };
+      }
+
       const { data: logtoUserInfo } = await this.logtoService.logtoApi.get(`/api/users/${uId}`);
       const membershipInfo = await this.getMembershipInfo(uId);
       return {
@@ -62,6 +112,20 @@ export class UserService {
   }
 
   async updateUser(user: UserEntity, dto: UpdateUserDto) {
+    if (LOCAL_MODE) {
+      const profile = readProfile();
+      if (dto.username !== undefined) {
+        profile.username = dto.username;
+        profile.name = dto.username;
+      }
+      if (dto.avatar !== undefined) {
+        profile.avatar = dto.avatar;
+        profile.picture = dto.avatar;
+      }
+      writeProfile(profile);
+      return { data: { ...profile, id: user.userId, sub: user.userId } };
+    }
+
     try {
       const { data } = await this.logtoService.logtoApi.patch(`/api/users/${user.userId}`, dto);
       return { data };

@@ -14,6 +14,18 @@ let lastSavedIndex = 0;
 let isSaveStatement = true;
 const statementIndex = ref(0);
 
+/** 立即保存进度的执行器，由 setupAutoSaveProgress 注入当前课程上下文 */
+let flushHandler: (() => Promise<void>) | null = null;
+
+/**
+ * 立即把当前题目下标写回服务端。
+ * 用于「返回课程列表」这类会离开页面、但不会触发 beforeunload 的场景，
+ * 否则要从 5 秒防抖里等，进度可能丢失。
+ */
+export async function flushProgress() {
+  if (flushHandler) await flushHandler();
+}
+
 export function useStatement() {
   function setupAutoSaveProgress(course: Ref<Course | undefined>) {
     // 课程的 statement 会被删除，
@@ -68,6 +80,21 @@ export function useStatement() {
         });
       }
     }
+
+    // 供「返回课程列表」等手动离开的时机立刻落盘
+    flushHandler = async () => {
+      if (!course.value || !isAuthenticated()) return;
+      try {
+        await fetchUpdateCourseProgress({
+          coursePackId: course.value.coursePackId,
+          courseId: course.value.id,
+          statementIndex: statementIndex.value,
+        });
+        lastSavedIndex = statementIndex.value;
+      } catch {
+        // 网络异常不阻塞返回，本地还有防抖与定时保存兜底
+      }
+    };
   }
 
   return {

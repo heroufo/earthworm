@@ -30,3 +30,18 @@ export async function fetchRemoveMasteredElements(elementId: string) {
     method: "delete",
   })) as boolean;
 }
+
+export interface PracticeItem {
+  id: string;
+  english: string;
+  chinese: string;
+  soundmark: string;
+}
+
+export async function fetchPracticeItems(ids: string[]) {
+  const http = getHttp();
+  return (await http<PracticeItem[]>(`/mastered-elements/practice`, {
+    method: "post",
+    body: { ids },
+  })) as PracticeItem[];
+}

@@ -4,6 +4,7 @@ import { AuthGuard } from "../guards/auth.guard";
 import { User, UserEntity } from "../user/user.decorators";
 import { MasteredElementService } from "./mastered-element.service";
 import { AddMasteredElementDto } from "./model/add-mastered-element.dto";
+import { PracticeMasteredElementsDto } from "./model/practice-mastered-elements.dto";
 import { RemoveMasteredElementDto } from "./model/remove-mastered-element.dto";
 
 @Controller("mastered-elements")
@@ -26,6 +27,18 @@ export class MasteredElementController {
   @Get()
   async getMasteredElements(@User() user: UserEntity) {
     return this.masteredElementService.getMasteredElements(user.userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post("practice")
+  async getPracticeItems(
+    @User() user: UserEntity,
+    @Body() practiceMasteredElementsDto: PracticeMasteredElementsDto,
+  ) {
+    return await this.masteredElementService.getPracticeItems(
+      user.userId,
+      practiceMasteredElementsDto.ids,
+    );
   }
 
   @UseGuards(AuthGuard)

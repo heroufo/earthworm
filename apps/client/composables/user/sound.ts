@@ -51,3 +51,27 @@ export function useAutoPlayEnglish() {
     removeAutoPlayEnglish,
   };
 }
+
+/**
+ * 答对后朗读英文
+ * ------------------------------------------------------------
+ * 中译英练习时，答题前先读英文等于把答案念出来。
+ * 关掉「答题时先读英文」、打开这一项，就是「先答，答对再听」的节奏。
+ */
+export const PLAY_AFTER_CORRECT = "playAfterCorrect";
+
+export function usePlayAfterCorrect() {
+  const {
+    value: playAfterCorrect,
+    isTrue: isPlayAfterCorrect,
+    toggle: togglePlayAfterCorrect,
+    remove: removePlayAfterCorrect,
+  } = useLocalStorageBoolean(PLAY_AFTER_CORRECT, true); // 默认开启
+
+  return {
+    playAfterCorrect,
+    isPlayAfterCorrect,
+    togglePlayAfterCorrect,
+    removePlayAfterCorrect,
+  };
+}

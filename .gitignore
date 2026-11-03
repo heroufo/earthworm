@@ -138,3 +138,26 @@ dist
 .volumes
 cache
 course-db
+
+# ---------------------------------------------------------------
+# 本地一键部署的运行时产物（这些都不进版本库）
+# tools/pgsql、tools/redis 是免安装的程序本体，tools/pgdata 是真实数据库数据，
+# storage/ 是运行时生成的音频缓存 —— 体积大且因机器而异，clone 后由启动脚本重装
+# ---------------------------------------------------------------
+tools/pgsql/
+tools/pgdata/
+tools/redis/
+tools/redis-data/
+tools/tts-test/
+tools/preview/
+tools/pg.log
+storage/
+
+# 一次性调试脚本（依赖本机数据 ID，不适合入库）
+tools/inject-csv.js
+tools/inject-and-merge.js
+tools/pick-merge.js
+tools/type-answer.js
+
+# 本地身份与配置
+.local-profile.json

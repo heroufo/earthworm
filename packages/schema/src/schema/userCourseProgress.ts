@@ -19,6 +19,11 @@ export const userCourseProgress = pgTable(
     updatedAt: timestamp("updated_at").$onUpdateFn(() => new Date()),
   },
   (t) => ({
-    unq: unique().on(t.userId, t.coursePackId),
+    /**
+     * 一节课一行：课程列表要靠它按课算「已学进度」。
+     * 早期版本是 (userId, coursePackId) 唯一，同一包里只有一条记录，
+     * 换一节学就会把上一节的进度覆盖掉。
+     */
+    unq: unique().on(t.userId, t.coursePackId, t.courseId),
   }),
 );

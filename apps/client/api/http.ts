@@ -6,11 +6,13 @@ import { ofetch } from "ofetch";
 import { getToken } from "~/services/auth";
 
 let http: $Fetch;
+let cachedApiBase = "";
 export function setupHttp() {
   if (http) return http;
 
   const config = useRuntimeConfig();
   const baseURL = config.public.apiBase as string;
+  cachedApiBase = baseURL;
 
   http = ofetch.create({
     baseURL,
@@ -47,4 +49,14 @@ export function getHttp() {
     throw new Error("HTTP client not initialized. Call setupHttp first.");
   }
   return http;
+}
+
+/**
+ * 后端基地址。发音接口（/tts/speak）要拼成绝对地址交给 <audio> 播放，
+ * 而它可能在 setup 之外被调用，所以这里缓存一份 setupHttp 时的值。
+ */
+export function getApiBase() {
+  if (cachedApiBase) return cachedApiBase.replace(/\/$/, "");
+  const runtime = (globalThis as any).__NUXT__?.config?.public?.apiBase as string | undefined;
+  return (runtime || "").replace(/\/$/, "");
 }

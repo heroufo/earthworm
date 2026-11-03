@@ -1,11 +1,17 @@
 name: CI
 
+# 本地版改造后不再跟随上游自动跑：
+# 这套流程依赖 Logto + Docker 起库，本地版把认证换成了 LOCAL_MODE，
+# 自动触发只会一直红。需要时可以手动点一次验证。
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-    # types: [review_requested, ready_for_review]
+  workflow_dispatch:
+
+# 上游原有触发方式，保留备查
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+#     branches: [main]
 
 jobs:
   test:

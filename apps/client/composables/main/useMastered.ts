@@ -66,7 +66,7 @@ export function useMastered() {
       cancelShortcut(undoShortcut);
       registerShortcut(undoShortcut, handleUndo);
 
-      toastId = toast("成功添加到掌握列表中", {
+      toastId = toast("已加入收藏", {
         action: {
           label: "撤销",
           onClick: () => handleUndo(new KeyboardEvent("keydown")),

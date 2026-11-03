@@ -104,7 +104,7 @@ interface AnchorAttributes extends Record<string, any> {
   download?: string;
 }
 const HEADER_OPTIONS: AnchorAttributes[] = [
-  { name: "文档", href: runtimeConfig.public.helpDocsURL as string, target: "_blank" },
+  { name: "文档", href: "/help" },
   { name: "功能", href: "#features" },
   { name: "问题", href: "#faq" },
   { name: "联系我们", href: "#contact" },
@@ -112,7 +112,9 @@ const HEADER_OPTIONS: AnchorAttributes[] = [
 
 // TODO: 设置需要固定导航栏的页面
 const isStickyNavBar = computed(() =>
-  ["index", "User-Setting", "mastered-elements"].includes(route.name as string),
+  ["index", "User-Setting", "favorites", "favorites-practice", "help"].includes(
+    route.name as string,
+  ),
 );
 const isScrolled = computed(() => y.value >= SCROLL_THRESHOLD);
 </script>

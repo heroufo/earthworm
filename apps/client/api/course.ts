@@ -18,6 +18,10 @@ export interface CourseApiResponse {
   statements: StatementApiResponse[];
   coursePackId: string;
   completionCount: number;
+  /** 本课句子数量，仅课程包列表接口返回 */
+  statementCount?: number;
+  /** 已学句子数量，用于课程列表的进度条（仅课程包列表接口返回） */
+  learnedCount?: number;
   statementIndex: number;
   video: string;
 }

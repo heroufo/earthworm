@@ -1,27 +1,12 @@
-import type { LogtoConfig } from "@logto/vue";
-
-import { createLogto, UserScope } from "@logto/vue";
-import { defineNuxtPlugin, useRuntimeConfig } from "nuxt/app";
+import { defineNuxtPlugin } from "nuxt/app";
 
 import { setupAuth } from "~/services/auth";
 
-export default defineNuxtPlugin((nuxtApp) => {
-  const runtimeConfig = useRuntimeConfig();
-
-  const config: LogtoConfig = {
-    endpoint: runtimeConfig.public.endpoint,
-    appId: runtimeConfig.public.appId,
-
-    scopes: [
-      UserScope.Email,
-      UserScope.Phone,
-      UserScope.CustomData,
-      UserScope.Identities,
-      UserScope.Organizations,
-    ],
-    resources: [runtimeConfig.public.backendEndpoint],
-  };
-
-  nuxtApp.vueApp.use(createLogto, config);
+/**
+ * 本地部署模式（Local Mode）
+ * 原版在这里用 createLogto 注册 Logto 客户端；本地部署不需要，
+ * 只初始化本地认证服务即可。
+ */
+export default defineNuxtPlugin(() => {
   setupAuth();
 });

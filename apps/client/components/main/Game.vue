@@ -1,13 +1,20 @@
 <template>
-  <template v-if="isDictationMode()">
-    <ModeDictationMode />
-  </template>
-  <template v-else-if="isChineseToEnglishMode()">
-    <ModeChineseToEnglishMode />
-  </template>
+  <div class="game-mode">
+    <template v-if="isDictationMode()">
+      <ModeDictationMode />
+    </template>
+    <template v-else-if="isChineseToEnglishMode()">
+      <ModeChineseToEnglishMode />
+    </template>
+  </div>
 
-  <MainLearningTimer v-if="isAuthenticated()"></MainLearningTimer>
-  <MainTips />
+  <!-- 学习页不再显示计时与快捷键提示条，功能与快捷键仍然有效 -->
+  <div class="game-timer">
+    <MainLearningTimer v-if="isAuthenticated()"></MainLearningTimer>
+  </div>
+  <div class="game-tips">
+    <MainTips />
+  </div>
   <MainSummary />
   <MainShare />
   <GamePauseModal v-if="isAuthenticated()"></GamePauseModal>
@@ -35,3 +42,18 @@ onUnmounted(() => {
   gameStore.exitGame();
 });
 </script>
+
+<style scoped>
+/* 计时器与快捷键提示条在图片版式里没有，隐藏但仍保留其逻辑与快捷键注册 */
+.game-timer,
+.game-tips {
+  display: none;
+}
+
+.game-mode {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+</style>
